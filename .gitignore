@@ -1,0 +1,6 @@
+ipch/**/*
+Tracker.sdf
+Tracker.pdb
+Tracker.ilk
+Tracker.exe
+Tracker/Debug/**/*
