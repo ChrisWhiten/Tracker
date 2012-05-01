@@ -2,6 +2,7 @@
 #define BASETRACKER_H
 
 #include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <vector>
 
 struct Track
@@ -21,6 +22,7 @@ public:
 		static int next_id = 0;
 		id = next_id++;
 		tracker_name = name;
+		colour = CV_RGB(rand() % 255, rand() % 255, rand() % 255);
 	};
 
 	~BaseTracker(){};
@@ -28,11 +30,11 @@ public:
 	virtual void init() = 0;
 	virtual std::vector<Track> trackFrame(cv::Mat &frame) = 0;
 
-protected:
-	
-	int id;
 	std::string tracker_name;
-	// also add representative colour. [TODO]
+	cv::Scalar colour;
+
+protected:
+	int id;	
 };
 
 #endif

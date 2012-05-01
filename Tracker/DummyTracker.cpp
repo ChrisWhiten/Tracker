@@ -18,7 +18,7 @@ std::vector<Track> DummyTracker::trackFrame(cv::Mat &frame)
 
 	Track t;
 	t.x = 5;
-	t.y = 5;
+	t.y = 20;
 	t.height = 50;
 	t.width = 5;
 	t.id = this->id;

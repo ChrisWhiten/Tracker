@@ -16,6 +16,7 @@
 #include "ui_Tracker.h"
 #include "Constants.h"
 #include "DummyTracker.h"
+#include "OpenCVToQtInterfacing.h"
 
 class Tracker : public QMainWindow
 {

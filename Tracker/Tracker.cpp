@@ -1,55 +1,5 @@
 #include "Tracker.h"
 
-// These functions below convert a cv::Mat to a QImage.
-// Adapted from http://stackoverflow.com/questions/5026965/how-to-convert-an-opencv-cvmat-to-qimage
-// The grayscale ones seem to be inverted.  Look into this later.
-
-QImage Mat2QImage(const cv::Mat3b &src) 
-{
-	QImage dest(src.cols, src.rows, QImage::Format_ARGB32);
-    for (unsigned row = 0; row < src.rows; ++row) 
-	{
-	    const cv::Vec3b *srcrow = src[row];
-        QRgb *destrow = (QRgb*)dest.scanLine(row);
-		for (unsigned col = 0; col< src.cols; ++col) 
-		{
-	        destrow[col] = qRgba(srcrow[col][2], srcrow[col][1], srcrow[col][0], 255);
-        }
-    }
-	return dest;
-}
-
-
-QImage Mat2QImage(const cv::Mat_<double> &src)
-{
-        double scale = 255.0;
-        QImage dest(src.cols, src.rows, QImage::Format_ARGB32);
-        for (int y = 0; y < src.rows; ++y) {
-                const double *srcrow = src[y];
-                QRgb *destrow = (QRgb*)dest.scanLine(y);
-                for (int x = 0; x < src.cols; ++x) {
-                        unsigned int color = srcrow[x] * scale;
-                        destrow[x] = qRgba(color, color, color, 255);
-                }
-        }
-        return dest;
-}
-
-QImage Mat2QImage(const cv::Mat_<unsigned char> &src)
-{
-        double scale = 255.0;
-        QImage dest(src.cols, src.rows, QImage::Format_ARGB32);
-        for (int y = 0; y < src.rows; ++y) {
-                const unsigned char *srcrow = src[y];
-                QRgb *destrow = (QRgb*)dest.scanLine(y);
-                for (int x = 0; x < src.cols; ++x) {
-                        unsigned int color = srcrow[x] * scale;
-                        destrow[x] = qRgba(color, color, color, 255);
-                }
-        }
-        return dest;
-}
-
 
 Tracker::Tracker(QWidget *parent, Qt::WFlags flags)
 	: QMainWindow(parent, flags)
@@ -68,27 +18,32 @@ Tracker::Tracker(QWidget *parent, Qt::WFlags flags)
 }
 
 Tracker::~Tracker()
-{
+{}
 
-}
-
-
+// Track the frame through each target tracker,
+// and display the results with a coloured rectangle.
 void Tracker::trackFrame(cv::Mat &input, cv::Mat &output)
 {
 	for (unsigned i = 0; i < trackers.size(); ++i)
 	{
 		std::vector<Track> tracks = trackers[i]->trackFrame(input);
-
-		// when colour is available, use that to draw the correctly coloured rectangle.
 		for (unsigned j = 0; j < tracks.size(); ++j)
 		{
 			cv::Point tl(tracks[i].x, tracks[i].y);
 			cv::Point br(tracks[i].x + tracks[i].width, tracks[i].y + tracks[i].height);
-			cv::rectangle(output, tl, br, CV_RGB(255, 0, 0));
+			cv::rectangle(output, tl, br, trackers[i]->colour, 2);
 		}
 	}
 }
 
+// 'slot' callback emitted from the timer timing out.
+// Takes next frame, feeds it into the tracker, and displays 
+// the results on our Qt window.
+//
+// Kind of messy, needs to be cleaned up in the future.
+// [TODO]: Gracefully handle end of frames.
+// Allow user to select input sequence.
+// Handle both .avis and sequence of .jpgs.
 void Tracker::nextFrame()
 {
 	static int i = 0;
@@ -115,7 +70,7 @@ void Tracker::nextFrame()
 	// arrange raw image.
 	ui.input_sequence->setGeometry(0, 0, frame.cols, frame.rows);
 
-	QImage qimage_frame = Mat2QImage(frame);
+	QImage qimage_frame = OpenCVToQtInterfacing::Mat2QImage(frame);
 	ui.input_sequence->setPixmap(QPixmap::fromImage(qimage_frame));
 
 	int input_label_x = (frame.cols/2) - (ui.input_label->width()/2);
@@ -124,7 +79,7 @@ void Tracker::nextFrame()
 	// arrange tracked image.
 	ui.output_sequence->setGeometry(output_frame.cols + 10, 0, output_frame.cols, output_frame.rows);
 
-	QImage qimage_output_frame = Mat2QImage(output_frame);
+	QImage qimage_output_frame = OpenCVToQtInterfacing::Mat2QImage(output_frame);
 	ui.output_sequence->setPixmap(QPixmap::fromImage(qimage_output_frame));
 
 	int output_label_x = ((3 * output_frame.cols)/2 + 10) - (ui.output_label->width()/2);
