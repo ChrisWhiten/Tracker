@@ -7,11 +7,15 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include <iostream>
 #include <string>
 #include <sstream>
+
 #include "ui_Tracker.h"
+#include "Constants.h"
+#include "DummyTracker.h"
 
 class Tracker : public QMainWindow
 {
@@ -28,8 +32,10 @@ private:
 	Ui::TrackerClass ui;
 	QLabel *my_label;
 	QTimer *timer;
+	std::vector<BaseTracker *> trackers;
+	
+	void trackFrame(cv::Mat &input, cv::Mat &output);
 
-	static const int FPS = 30;
 };
 
 #endif // TRACKER_H

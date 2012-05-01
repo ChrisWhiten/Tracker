@@ -56,10 +56,13 @@ Tracker::Tracker(QWidget *parent, Qt::WFlags flags)
 {
 	ui.setupUi(this);
 	my_label = new QLabel();
+
+	// initialize trackers
+	trackers.push_back(new DummyTracker());
 	
 	// Update the UI
 	timer = new QTimer(this);
-	timer->setInterval(1000/FPS);
+	timer->setInterval(1000/Constants::FPS);
 	connect(timer, SIGNAL(timeout()), this, SLOT(nextFrame()));
 	timer->start();
 }
@@ -70,9 +73,22 @@ Tracker::~Tracker()
 }
 
 
-// [TODO]
-// Fix the label geometry a bit...
-// Resize the frame so it fits nicely into the window.
+void Tracker::trackFrame(cv::Mat &input, cv::Mat &output)
+{
+	for (unsigned i = 0; i < trackers.size(); ++i)
+	{
+		std::vector<Track> tracks = trackers[i]->trackFrame(input);
+
+		// when colour is available, use that to draw the correctly coloured rectangle.
+		for (unsigned j = 0; j < tracks.size(); ++j)
+		{
+			cv::Point tl(tracks[i].x, tracks[i].y);
+			cv::Point br(tracks[i].x + tracks[i].width, tracks[i].y + tracks[i].height);
+			cv::rectangle(output, tl, br, CV_RGB(255, 0, 0));
+		}
+	}
+}
+
 void Tracker::nextFrame()
 {
 	static int i = 0;
@@ -80,17 +96,39 @@ void Tracker::nextFrame()
 
 	// Load frame from file and convert into Qt format
 	ss << "C:/data/face/" << i << ".jpg";
+
 	cv::Mat3b frame = cv::imread(ss.str());
-	QImage my_image = Mat2QImage(frame);
+	cv::Mat3b output_frame(frame.rows, frame.cols);
+	frame.copyTo(output_frame);
 
+	trackFrame(frame, output_frame);
+	
+	// arrange raw and tracked frames to be viewable in our window.
+	if (Constants::RESIZE_OUTPUT)
+	{
+		int frame_width = ui.centralWidget->width()/3;
+		int frame_height = ui.centralWidget->height()/2;
+		cv::resize(frame, frame, cv::Size(frame_width, frame_height), 0, 0);
+		cv::resize(output_frame, output_frame, cv::Size(frame_width, frame_height), 0, 0);
+	}
+
+	// arrange raw image.
 	ui.input_sequence->setGeometry(0, 0, frame.cols, frame.rows);
-	ui.input_sequence->setPixmap(QPixmap::fromImage(my_image));
-	ui.input_label->setGeometry(frame.cols/2, frame.rows + 10, ui.input_label->width(), ui.input_label->height());
 
-	// for now, just repeat the input sequence.  The tracked image should be here.
-	ui.output_sequence->setGeometry(frame.cols + 10, 0, frame.cols, frame.rows);
-	ui.output_sequence->setPixmap(QPixmap::fromImage(my_image));
-	ui.output_label->setGeometry((3 * frame.cols)/2 + 10, frame.rows + 10, ui.output_label->width(), ui.output_label->height());
+	QImage qimage_frame = Mat2QImage(frame);
+	ui.input_sequence->setPixmap(QPixmap::fromImage(qimage_frame));
+
+	int input_label_x = (frame.cols/2) - (ui.input_label->width()/2);
+	ui.input_label->setGeometry(input_label_x, frame.rows + 10, ui.input_label->width(), ui.input_label->height());
+
+	// arrange tracked image.
+	ui.output_sequence->setGeometry(output_frame.cols + 10, 0, output_frame.cols, output_frame.rows);
+
+	QImage qimage_output_frame = Mat2QImage(output_frame);
+	ui.output_sequence->setPixmap(QPixmap::fromImage(qimage_output_frame));
+
+	int output_label_x = ((3 * output_frame.cols)/2 + 10) - (ui.output_label->width()/2);
+	ui.output_label->setGeometry(output_label_x, output_frame.rows + 10, ui.output_label->width(), ui.output_label->height());
 
 	ss.str("");
 	i++;

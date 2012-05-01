@@ -78,6 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DummyTracker.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_Tracker.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -119,6 +120,9 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BaseTracker.h" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="DummyTracker.h" />
     <ClInclude Include="GeneratedFiles\ui_Tracker.h" />
   </ItemGroup>
   <ItemGroup>

@@ -50,6 +50,9 @@
     <ClCompile Include="GeneratedFiles\qrc_Tracker.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="DummyTracker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Tracker.h">
@@ -65,6 +68,15 @@
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_Tracker.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseTracker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DummyTracker.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
