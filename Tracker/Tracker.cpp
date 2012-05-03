@@ -2,10 +2,13 @@
 
 
 Tracker::Tracker(QWidget *parent, Qt::WFlags flags)
-	: QMainWindow(parent, flags)
+	: QMainWindow(parent, flags), reading_sequence_of_images(false)
 {
 	ui.setupUi(this);
-	my_label = new QLabel();
+
+	connect(ui.actionLoad, SIGNAL(triggered()), this, SLOT(loadFiles()));
+	connect(ui.actionBeginTracking, SIGNAL(triggered()), this, SLOT(beginTracking()));
+
 
 	// initialize trackers
 	trackers.push_back(new DummyTracker());
@@ -14,7 +17,6 @@ Tracker::Tracker(QWidget *parent, Qt::WFlags flags)
 	timer = new QTimer(this);
 	timer->setInterval(1000/Constants::FPS);
 	connect(timer, SIGNAL(timeout()), this, SLOT(nextFrame()));
-	timer->start();
 }
 
 Tracker::~Tracker()
@@ -41,18 +43,15 @@ void Tracker::trackFrame(cv::Mat &input, cv::Mat &output)
 // the results on our Qt window.
 //
 // Kind of messy, needs to be cleaned up in the future.
-// [TODO]: Gracefully handle end of frames.
-// Allow user to select input sequence.
-// Handle both .avis and sequence of .jpgs.
 void Tracker::nextFrame()
 {
-	static int i = 0;
-	std::stringstream ss;
+	// load frame.
+	cv::Mat3b frame = getFrame();
+	if (!frame.data)
+	{
+		return;
+	}
 
-	// Load frame from file and convert into Qt format
-	ss << "C:/data/face/" << i << ".jpg";
-
-	cv::Mat3b frame = cv::imread(ss.str());
 	cv::Mat3b output_frame(frame.rows, frame.cols);
 	frame.copyTo(output_frame);
 
@@ -85,7 +84,59 @@ void Tracker::nextFrame()
 	int output_label_x = ((3 * output_frame.cols)/2 + 10) - (ui.output_label->width()/2);
 	ui.output_label->setGeometry(output_label_x, output_frame.rows + 10, ui.output_label->width(), ui.output_label->height());
 
-	ss.str("");
-	i++;
 	repaint();
+}
+
+// Slot associated with the user wanting to select files to load.
+void Tracker::loadFiles()
+{
+    files = QFileDialog::getOpenFileNames(this, tr("Directory"), directory.path());
+	if (files.length() > 1)
+	{
+		reading_sequence_of_images = true;
+	}
+	else
+	{
+		// initialize video to be read.
+		capture = new cv::VideoCapture(files[0].toStdString());
+		reading_sequence_of_images = false;
+	}
+}
+
+void Tracker::beginTracking()
+{
+	timer->start();
+}
+
+void Tracker::endTracking()
+{
+	timer->stop();
+	if (capture)
+	{
+		delete capture;
+	}
+
+	// this is where we might also write some logs and results.
+}
+
+cv::Mat3b Tracker::getFrame()
+{
+	cv::Mat3b frame;
+	if (reading_sequence_of_images)
+	{
+		static int frame_number = 0;
+		if (frame_number >= files.size())
+		{
+			return frame;
+		}
+
+		QString filename = files[frame_number];
+		frame = cv::imread(filename.toStdString());
+		frame_number++;
+	}
+	else
+	{
+		*capture >> frame;	
+	}
+	return frame;
 }

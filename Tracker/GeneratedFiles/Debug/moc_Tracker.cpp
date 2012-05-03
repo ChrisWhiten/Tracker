@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'Tracker.h'
 **
-** Created: Tue May 1 14:28:43 2012
+** Created: Thu May 3 12:31:32 2012
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.1)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_Tracker[] = {
        6,       // revision
        0,       // classname
        0,    0, // classinfo
-       1,   14, // methods
+       3,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -32,12 +32,15 @@ static const uint qt_meta_data_Tracker[] = {
 
  // slots: signature, parameters, type, tag, flags
        9,    8,    8,    8, 0x08,
+      21,    8,    8,    8, 0x08,
+      33,    8,    8,    8, 0x08,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_Tracker[] = {
-    "Tracker\0\0nextFrame()\0"
+    "Tracker\0\0nextFrame()\0loadFiles()\0"
+    "beginTracking()\0"
 };
 
 void Tracker::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
@@ -47,6 +50,8 @@ void Tracker::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, voi
         Tracker *_t = static_cast<Tracker *>(_o);
         switch (_id) {
         case 0: _t->nextFrame(); break;
+        case 1: _t->loadFiles(); break;
+        case 2: _t->beginTracking(); break;
         default: ;
         }
     }
@@ -85,9 +90,9 @@ int Tracker::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 1)
+        if (_id < 3)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 1;
+        _id -= 3;
     }
     return _id;
 }

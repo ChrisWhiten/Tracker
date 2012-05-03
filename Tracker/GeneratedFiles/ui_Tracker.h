@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'Tracker.ui'
 **
-** Created: Tue May 1 14:28:43 2012
+** Created: Thu May 3 10:45:05 2012
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -17,9 +17,9 @@
 #include <QtGui/QHeaderView>
 #include <QtGui/QLabel>
 #include <QtGui/QMainWindow>
+#include <QtGui/QMenu>
 #include <QtGui/QMenuBar>
 #include <QtGui/QStatusBar>
-#include <QtGui/QToolBar>
 #include <QtGui/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -27,13 +27,15 @@ QT_BEGIN_NAMESPACE
 class Ui_TrackerClass
 {
 public:
+    QAction *actionLoad;
+    QAction *actionBeginTracking;
     QWidget *centralWidget;
     QLabel *input_sequence;
     QLabel *output_sequence;
     QLabel *input_label;
     QLabel *output_label;
     QMenuBar *menuBar;
-    QToolBar *mainToolBar;
+    QMenu *menuFile;
     QStatusBar *statusBar;
 
     void setupUi(QMainWindow *TrackerClass)
@@ -41,6 +43,10 @@ public:
         if (TrackerClass->objectName().isEmpty())
             TrackerClass->setObjectName(QString::fromUtf8("TrackerClass"));
         TrackerClass->resize(600, 400);
+        actionLoad = new QAction(TrackerClass);
+        actionLoad->setObjectName(QString::fromUtf8("actionLoad"));
+        actionBeginTracking = new QAction(TrackerClass);
+        actionBeginTracking->setObjectName(QString::fromUtf8("actionBeginTracking"));
         centralWidget = new QWidget(TrackerClass);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         input_sequence = new QLabel(centralWidget);
@@ -59,13 +65,16 @@ public:
         menuBar = new QMenuBar(TrackerClass);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
         menuBar->setGeometry(QRect(0, 0, 600, 21));
+        menuFile = new QMenu(menuBar);
+        menuFile->setObjectName(QString::fromUtf8("menuFile"));
         TrackerClass->setMenuBar(menuBar);
-        mainToolBar = new QToolBar(TrackerClass);
-        mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
-        TrackerClass->addToolBar(Qt::TopToolBarArea, mainToolBar);
         statusBar = new QStatusBar(TrackerClass);
         statusBar->setObjectName(QString::fromUtf8("statusBar"));
         TrackerClass->setStatusBar(statusBar);
+
+        menuBar->addAction(menuFile->menuAction());
+        menuFile->addAction(actionLoad);
+        menuFile->addAction(actionBeginTracking);
 
         retranslateUi(TrackerClass);
 
@@ -75,10 +84,13 @@ public:
     void retranslateUi(QMainWindow *TrackerClass)
     {
         TrackerClass->setWindowTitle(QApplication::translate("TrackerClass", "Tracker", 0, QApplication::UnicodeUTF8));
+        actionLoad->setText(QApplication::translate("TrackerClass", "Load", 0, QApplication::UnicodeUTF8));
+        actionBeginTracking->setText(QApplication::translate("TrackerClass", "Begin Tracking", 0, QApplication::UnicodeUTF8));
         input_sequence->setText(QApplication::translate("TrackerClass", "Input Sequence", 0, QApplication::UnicodeUTF8));
         output_sequence->setText(QApplication::translate("TrackerClass", "Output Sequence", 0, QApplication::UnicodeUTF8));
         input_label->setText(QApplication::translate("TrackerClass", "Raw Frame", 0, QApplication::UnicodeUTF8));
         output_label->setText(QApplication::translate("TrackerClass", "Tracked Frame", 0, QApplication::UnicodeUTF8));
+        menuFile->setTitle(QApplication::translate("TrackerClass", "File", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };
