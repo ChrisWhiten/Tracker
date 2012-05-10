@@ -3,36 +3,6 @@
 #include <cmath>
 
 using namespace std;
-//
-// utilities 
-//
-
-cv::Mat colour;
-
-void FragTrack::drawRectangle(FaceTemplate *face, cv::Mat* I)
-{
-	CvPoint tl;
-	tl.y = face->getYTopLeft();
-	tl.x = face->getXTopLeft();
-	
-	CvPoint br;
-	br.y = face->getYTopLeft() + face->getHeight() - 1;
-	br.x = face->getXTopLeft() + face->getWidth() - 1;
-	
-	cv::rectangle(*I, tl, br, face->getColour(), 3 );
-
-	// convert id to a string to print.
-	std::string s;
-	std::stringstream out;
-	out << face->getId();
-	s = out.str();
-	cv::putText(*I, s, tl, CV_FONT_HERSHEY_COMPLEX, 0.8, cv::Scalar(200, 200, 250), 3);
-}
-
-void FragTrack::drawRectangle(cv::Mat* I, cv::Rect r)
-{
-	cv::rectangle(*I, r, cv::Scalar(200, 200, 250), 3);
-}
 
 cv::Mat FragTrack::getROI(cv::Mat parent, int x, int y, int width, int height)
 {
@@ -62,8 +32,7 @@ cv::Mat FragTrack::getROI(cv::Mat parent, int x, int y, int width, int height)
 
 void FragTrack::addTracks(cv::Mat &I, const std::vector<Track> &t)
 {
-	//img = I;
-	
+	img = I;
 	// allocate space for the IIV_I and the combined votes maps
 	cv::Mat* curr_ii;
 	
@@ -72,17 +41,11 @@ void FragTrack::addTracks(cv::Mat &I, const std::vector<Track> &t)
 	for (i=0; i < num_bins; i++) 
 	{
 		curr_ii = new cv::Mat(I.rows,I.cols,CV_32S);
-		
 		IIV_I.push_back(curr_ii);
 	}
 
-	for (i = 0; i < num_bins; i++)
-	{
-		curr_ii = new cv::Mat(I.rows, I.cols, CV_32S);
-		IIV_I2.push_back(curr_ii);
-	}
 
-	computeIH(I, IIV_I );
+	buildIntegralHistogram(I, IIV_I);
 
 	for (unsigned i = 0; i < t.size(); ++i)
 	{
@@ -94,7 +57,7 @@ void FragTrack::addTracks(cv::Mat &I, const std::vector<Track> &t)
 			dist += abs(tracks[j]->getXTopLeft() - t[i].x);
 			dist += abs(tracks[j]->getYTopLeft() - t[i].y);
 
-			if (dist < 40)
+			if (dist < 80)
 			{
 				is_new = false;
 				break;
@@ -129,7 +92,7 @@ void FragTrack::addTracks(cv::Mat &I, const std::vector<Track> &t)
 
 
 			// build the histograms of the patches in the template
-			buildTemplatePatchHistograms(ft, ft->patch_histograms);
+			buildTemplatePatchHistograms(ft);
 			tracks.push_back(ft);
 		}
 	}
@@ -162,69 +125,32 @@ FragTrack::~FragTrack(void)
 }
 
 
-// Routine for building the histograms of template patches/fragments 
-void FragTrack::buildTemplatePatchHistograms(FaceTemplate *face,
-											   vector< vector<double>* >& patch_histograms)
+// Build the histograms for each of the "fragments" (patches)
+void FragTrack::buildTemplatePatchHistograms(FaceTemplate *face)
 {
-	//
 	// clear the current histograms
-	//
-
-	vector < vector<double>* >::iterator it;
-	for (it = patch_histograms.begin(); it != patch_histograms.end(); it++)
+	for (auto it = face->patch_histograms.begin(); it != face->patch_histograms.end(); it++)
 	{
 		(*it)->clear();
 		delete (*it);
 	}
-	patch_histograms.clear();
+	face->patch_histograms.clear();
+	face->patches.clear();
 
-	//
-	// define the patches on this template
-	//
+	// define the patches on this track
 	definePatches(face);
 
-	//
-	// compute the integral histogram on the template
-	//
-	
-	int i;
-	
-	//
 	// now compute the histograms for every defined patch
-	//
-
-	vector < double > *curr_histogram;
-	
-	/*int t_cx = (int)floor((double)face->getWidth() / 2.0 );
-	int t_cy = (int)floor((double)face->getHeight() / 2.0 );*/
-
-	vector < Patch* >::iterator patch;
-	int ctr = 0;
-	for ( patch = face->patches.begin() ; patch != face->patches.end() ; ++patch)
+	for (auto patch = face->patches.begin() ; patch != face->patches.end() ; ++patch)
 	{
-		//
 		// compute current patch histogram
-		//
-		
-		/*int p_cx = t_cx + (*patch)->dx;
-		int p_cy = t_cy + (*patch)->dy;*/
-		
-		curr_histogram = new vector<double>;
-		//int tl_y , int tl_x , int br_y , int br_x
+		vector <double> *current_histogram = new vector<double>;
 		int tl_y = face->getYCenter() + (*patch)->dy - (*patch)->half_height;
 		int tl_x = face->getXCenter() + (*patch)->dx - (*patch)->half_width;
 		int br_y = face->getYCenter() + (*patch)->dy + (*patch)->half_height;
 		int br_x = face->getXCenter() + (*patch)->dx + (*patch)->half_width;
-		computeHistogram(tl_y, tl_x, br_y, br_x, IIV_I, *curr_histogram);//face->integral_histogram, *curr_histogram);
-		//computeHistogram( p_cy - (*patch)->half_height , p_cx - (*patch)->half_width , p_cy + (*patch)->half_height , p_cx + (*patch)->half_width , face->integral_histogram , *curr_histogram ); 
-		patch_histograms.push_back(curr_histogram);
-
-
-
-
-
-
-		ctr++;
+		computeHistogram(tl_y, tl_x, br_y, br_x, IIV_I, *current_histogram);
+		face->patch_histograms.push_back(current_histogram);
 	}
 
 	return;
@@ -332,10 +258,10 @@ void FragTrack::getBinForEachPixel(cv::Mat &I, cv::Mat *bin_mat)
 }
 
 //
-// computeIH compute integral histogram. Also possible to use OpenCV's 
+// buildIntegralHistogram compute integral histogram. Also possible to use OpenCV's 
 // routine, however there is a difference in the size of matrices returned
 
-bool FragTrack::computeIH(cv::Mat &I ,vector <cv::Mat*> &integral_histogram)
+bool FragTrack::buildIntegralHistogram(cv::Mat &I ,vector <cv::Mat*> &integral_histogram)
 {
 	//reset integral_histogram matrices
 	vector < cv::Mat* >::iterator it;
@@ -404,15 +330,11 @@ bool FragTrack::computeIH(cv::Mat &I ,vector <cv::Mat*> &integral_histogram)
 // a histogram in a rectangular region
 bool FragTrack::computeHistogram(int tl_y , int tl_x , int br_y , int br_x , vector < cv::Mat* >& iiv , vector < double >& hist)
 {
-	vector <cv::Mat*>::iterator it;
 	hist.clear();
 	double left , up , diag;
 	double z, sum = 0;
 
-	//cout << "computing histogram from " << tl_x << ", " << tl_y << " to " << br_x << ", " << br_y << endl;
-	//cout << iiv.size() << " is the size of iiv. " << endl;
-	//cout << iiv.at(0)->rows << " rows versus " << iiv.at(0)->cols << " cols "<< endl;
-	for (it = iiv.begin(); it != iiv.end(); it++)
+	for (auto it = iiv.begin(); it != iiv.end(); it++)
 	{
 		if (tl_x == 0) 
 		{
@@ -447,8 +369,7 @@ bool FragTrack::computeHistogram(int tl_y , int tl_x , int br_y , int br_x , vec
 	}
 
 	// normalize histogram
-	vector < double >::iterator it2;
-	for (it2 = hist.begin(); it2 != hist.end(); it2++) 
+	for (auto it2 = hist.begin(); it2 != hist.end(); it2++) 
 	{
 		(*it2) /= sum;
 	}
@@ -465,7 +386,7 @@ bool FragTrack::computeHistogram(int tl_y , int tl_x , int br_y , int br_x , vec
 // Amit January 21'st 2008
 //
 
-double FragTrack::compareHistograms(vector < double >& h1 , vector < double >& h2 )
+double FragTrack::compareHistograms(vector <double> &h1 , vector <double> &h2)
 {
 	double sum = 0;
 	double cdf1 = 0;
@@ -486,11 +407,11 @@ double FragTrack::compareHistograms(vector < double >& h1 , vector < double >& h
 }
 
 // computes the votes map associated with a single patch
-void FragTrack::computeSinglePatchVotes (Patch* p , FaceTemplate *f, vector < double > &reference_hist,
-										   int minrow, int mincol,
-										   int maxrow, int maxcol,
-										   cv::Mat* votes, int& min_r, int& min_c,
-										   int& max_r, int& max_c, FaceTemplate *ref)
+void FragTrack::computeSinglePatchVotes (Patch *p , FaceTemplate *f, vector <double> &reference_hist,
+										   int min_row, int min_col,
+										   int max_row, int max_col,
+										   cv::Mat *votes, int &min_r, int &min_c,
+										   int &max_r, int &max_c, FaceTemplate *ref)
 {
 	int M = (*IIV_I.begin())->rows;
 	int N = (*IIV_I.begin())->cols;
@@ -534,10 +455,10 @@ void FragTrack::computeSinglePatchVotes (Patch* p , FaceTemplate *f, vector < do
 	// we now enforce it:
 	//      
 
-	if (miny < minrow + p->dy) {miny = minrow + p->dy;}
-	if (maxy > maxrow + p->dy) {maxy = maxrow + p->dy;}
-	if (minx < mincol + p->dx) {minx = mincol + p->dx;}
-	if (maxx > maxcol + p->dx) {maxx = maxcol + p->dx;}
+	if (miny < min_row + p->dy) {miny = min_row + p->dy;}
+	if (maxy > max_row + p->dy) {maxy = max_row + p->dy;}
+	if (minx < min_col + p->dx) {minx = min_col + p->dx;}
+	if (maxx > max_col + p->dx) {maxx = max_col + p->dx;}
 
 	for (int row = 0; row < votes->rows; row++)
 	{
@@ -598,7 +519,7 @@ void FragTrack::computeSinglePatchVotes (Patch* p , FaceTemplate *f, vector < do
 					}
 
 					///// recompute histogram on reference image.
-					computeIH(&(ref->getTemplate()), IIV_I);
+					buildIntegralHistogram(&(ref->getTemplate()), IIV_I);
 					computeHistogram(0, 0, ref->patches[0]->half_height*2, ref->patches[0]->half_width*2, IIV_I, curr_hist);
 					cout << endl << "new hist from old frame! " << endl << "------------------" << endl << endl;
 					for (int index = 0; index < curr_hist.size(); index++)
@@ -610,7 +531,7 @@ void FragTrack::computeSinglePatchVotes (Patch* p , FaceTemplate *f, vector < do
 
 				// now the votemap is not the whole image but only the portion between
 				// min-max row-col
-				// so y-dy = minrow --> vote for index = 0
+				// so y-dy = min_row --> vote for index = 0
 				// 
 
 				votes->at<float>(row, col) = z;
@@ -635,50 +556,40 @@ void FragTrack::computeSinglePatchVotes (Patch* p , FaceTemplate *f, vector < do
 //
 // computeAllPatchVotes - runs on all patches and computes each one's vote map
 // Then combines all the votes maps (robustly) to a single vote map
-//
-
 void FragTrack::computeAllPatchVotes(FaceTemplate *current_face,
 										 FaceTemplate *reference,
 										 int img_height, int img_width,
-   										 int minrow, int mincol,
-										 int maxrow, int maxcol , cv::Mat* combined_vote,
+   										 int min_row, int min_col,
+										 int max_row, int max_col , cv::Mat* combined_vote,
 										 vector<int>& x_coords,
 										 vector<int>& y_coords,
 										 vector<double>& patch_scores) 
 {
-	vector < Patch* >::iterator patch;
 	cv::Mat* current_votemap;
-	vector < double >* reference_patch_histogram;
+	vector <double> *reference_patch_histogram;
 
 	patch_vote_maps.clear();
 	x_coords.clear();
 	y_coords.clear();
 	patch_scores.clear();
 
-	vector<int> vote_regions_minrow; 
-	vector<int> vote_regions_mincol;
-	vector<int> vote_regions_maxrow;
-	vector<int> vote_regions_maxcol;
+	vector<int> vote_regions_min_row; 
+	vector<int> vote_regions_min_col;
+	vector<int> vote_regions_max_row;
+	vector<int> vote_regions_max_col;
 
 	int minx, miny, maxx, maxy;
 
-	int vm_width = maxcol - mincol + 1;
-	int vm_height = maxrow - minrow + 1;
+	int vm_width = max_col - min_col + 1;
+	int vm_height = max_row - min_row + 1;
 
-	int i = -1;
-
-
-	for (patch = current_face->patches.begin() ; patch != current_face->patches.end() ; ++patch) 
+	int i = 0;
+	for (auto patch = current_face->patches.begin() ; patch != current_face->patches.end() ; ++patch) 
 	{
-
 		// current_votemap holds votes across the whole search radius.  +- 7 in width+height if search radius is 7.
-		current_votemap = new cv::Mat(2*search_radius + 1, 2*search_radius + 1, CV_32F);
+		current_votemap = new cv::Mat(2 * search_radius + 1, 2 * search_radius + 1, CV_32F);
 
-		//
 		// compute current patch histogram
-		//
-		
-		i++;
 		reference_patch_histogram = reference->patch_histograms[i]; 
 
 		int track_center_x = (int)floor((double)current_face->getWidth() / 2.0 );
@@ -692,15 +603,15 @@ void FragTrack::computeAllPatchVotes(FaceTemplate *current_face,
 		// returns resultant votes in current_votemap.
 		//cout << "reference is located at " << reference->patches[i]->dx << ", " << reference->patches[i]->dy << endl;
 		//cout << "current patch is located at " << (*patch)->dx << ", " << (*patch)->dy << endl;
-		computeSinglePatchVotes ( (*patch) , current_face, *reference_patch_histogram , minrow, mincol,
-							          maxrow, maxcol, current_votemap, miny, minx, maxy, maxx, reference);
+		computeSinglePatchVotes ( (*patch) , current_face, *reference_patch_histogram , min_row, min_col,
+							          max_row, max_col, current_votemap, miny, minx, maxy, maxx, reference);
 
 
 		patch_vote_maps.push_back(current_votemap); // curr_vm is a matrix of the results of each "sliding window" test to compare histogram against neighbours.
-		vote_regions_minrow.push_back(miny);
-		vote_regions_mincol.push_back(minx);
-		vote_regions_maxrow.push_back(maxy);
-		vote_regions_maxcol.push_back(maxx);
+		vote_regions_min_row.push_back(miny);
+		vote_regions_min_col.push_back(minx);
+		vote_regions_max_row.push_back(maxy);
+		vote_regions_max_col.push_back(maxx);
 				
 		//
 		// find the position based on this patch:
@@ -755,8 +666,8 @@ void FragTrack::computeAllPatchVotes(FaceTemplate *current_face,
 		//cout << minval << endl;
 		//cv::waitKey();
 
-		x_coords.push_back(mincol+min_loc.x); // these are the x,y coords of the hypothesis.
-		y_coords.push_back(minrow+min_loc.y);
+		x_coords.push_back(min_col+min_loc.x); // these are the x,y coords of the hypothesis.
+		y_coords.push_back(min_row+min_loc.y);
 		patch_scores.push_back(minval); // minval is the score of that hypothesis
 	}  // next patch
 
@@ -764,7 +675,7 @@ void FragTrack::computeAllPatchVotes(FaceTemplate *current_face,
 	// combine patch votes - using a quantile based score makes this combination
 	// robust to occlusions
 	//
-	combineVoteMaps(patch_vote_maps, combined_vote, mincol, minrow, maxcol, maxrow, current_face);
+	combineVoteMaps(patch_vote_maps, combined_vote, min_col, min_row, max_col, max_row, current_face);
 
 	// combined_vote is a matrix of the size of the sliding window radius, 
 	// where each value contains the probability that that location is the current location.
@@ -779,7 +690,7 @@ void FragTrack::computeAllPatchVotes(FaceTemplate *current_face,
 		(*vm_it)->release();
 	}
 	patch_vote_maps.clear();
-
+	i++;
 	return;
 }
 
@@ -792,7 +703,7 @@ void FragTrack::computeAllPatchVotes(FaceTemplate *current_face,
 
 // ok, new combinevotemaps.  the vote_maps are 2*search_radius + 1 by 2*search_radius + 1.  middle value in the matrix means object did not move.
 // each of these values is not actually a pixel, but a distance relative to the previous frame.
-void FragTrack::combineVoteMaps(vector< cv::Mat* > &vote_maps, cv::Mat *V, int mincol, int minrow, int maxcol, int maxrow, FaceTemplate *f)
+void FragTrack::combineVoteMaps(vector< cv::Mat* > &vote_maps, cv::Mat *V, int min_col, int min_row, int max_col, int max_row, FaceTemplate *f)
 {
 	int M = (vote_maps[0])->rows;
 	int N = (vote_maps[0])->cols; // this doesn't need to be cols because it's just 2*search_radius + 1.  they're the same in x and y.
@@ -839,18 +750,17 @@ void FragTrack::combineVoteMaps(vector< cv::Mat* > &vote_maps, cv::Mat *V, int m
 }
 
 //
-// findTemplate - the main routine. Searches for the template in the region defined
-// by minrow,mincol and maxrow,maxcol.
+// computeTrackDisplacement - the main routine. 
+// Searches for the template in the region defined
+// by min_row,min_col and max_row,max_col.
 // Returns the result in result_y,result_x and with it its associated score
-//
-
-void FragTrack::findTemplate(FaceTemplate *track,
+void FragTrack::computeTrackDisplacement(FaceTemplate *track,
 							 int img_height, int img_width,
-							 int& result_y, int& result_x, 
+							 int &result_y, int &result_x, 
 							 int &result_height, int &result_width,
-							 double& score,
-							 vector<int>& x_coords,
-							 vector<int>& y_coords)
+							 double &score,
+							 vector<int> &x_coords,
+							 vector<int> &y_coords)
 {
 	// need to check these scales...
 	// standard.
@@ -876,84 +786,75 @@ void FragTrack::findTemplate(FaceTemplate *track,
 
 	for (unsigned i = 0; i < scale_sizes; i++)
 	{
+		// allocate hypothesis size of the track.
 		int x = track->getXTopLeft() - size_to_grow_left[i];
-		//cout << "x = " << x << endl;
 		int y = track->getYTopLeft() - size_to_grow_upwards[i];
-		//cout << "y = " << y << endl;
 		int height = track->getHeight() + 2*size_to_grow_downwards[i];
-		//cout << "height = " << height << endl;
 		int width = track->getWidth() + 2*size_to_grow_right[i];
-		//cout << "width = " << width << endl;
 
-		// create a new facetemplate based on this region.  
+		// create a new FaceTemplate based on this hypothesis.  
 		cv::Mat tmp = getROI(img, x, y, width, height);
-		//cout << "after getroi" << endl;
-		FaceTemplate *current_face = new FaceTemplate(tmp, img, x, y, false, false); 
+		FaceTemplate *hypothesis_track = new FaceTemplate(tmp, img, x, y, false, false); 
 
 		
 		// make sure we're in bounds.
-		int minrow = current_face->getYCenter() - search_radius;
-		int mincol = current_face->getXCenter() - search_radius;
-		int maxrow = current_face->getYCenter() + search_radius;
-		int maxcol = current_face->getXCenter() + search_radius;
+		int min_row = hypothesis_track->getYCenter() - search_radius;
+		int min_col = hypothesis_track->getXCenter() - search_radius;
+		int max_row = hypothesis_track->getYCenter() + search_radius;
+		int max_col = hypothesis_track->getXCenter() + search_radius;
 
-		if (minrow - current_face->getHeight()/2 < 0) {minrow = current_face->getHeight()/2;}
-		if (mincol - current_face->getWidth()/2 < 0) {mincol = current_face->getWidth()/2;}
-		if (maxrow >= img_height) {maxrow = img_height-1;}
-		if (maxcol >= img_width) {maxcol = img_width-1;}
+		if (min_row - hypothesis_track->getHeight()/2 < 0) {min_row = hypothesis_track->getHeight()/2;}
+		if (min_col - hypothesis_track->getWidth()/2 < 0) {min_col = hypothesis_track->getWidth()/2;}
+		if (max_row >= img_height) {max_row = img_height - 1;}
+		if (max_col >= img_width) {max_col = img_width - 1;}
 
-		if (maxrow - minrow + 1 <= 0 || maxcol - mincol + 1 <= 0)
+		// out of bounds. remove.
+		if (max_row - min_row + 1 <= 0 || max_col - min_col + 1 <= 0)
 		{
-			// delete this track.
-			score = -1;
+			score = DELETE_TRACK;
 			return;
 		}
 
 		vector<double> patch_scores;
-		cv::Mat* combined_vote = new cv::Mat(2 * search_radius + 1, 2 * search_radius + 1, CV_32F);//new cv::Mat(track->getTemplate().rows + 2*search_radius,track->getTemplate().cols + 2*search_radius,CV_32F);
+		cv::Mat* combined_vote = new cv::Mat(2 * search_radius + 1, 2 * search_radius + 1, CV_32F);
 		
 		// build patches.
-		current_face->patches.clear();
-		current_face->patch_histograms.clear();
-		buildTemplatePatchHistograms(current_face, current_face->patch_histograms);
+		buildTemplatePatchHistograms(hypothesis_track);
 
-		// combined_vote is a matrix the size of the sliding window radius.  each entry is the probability that that location is the next tracking location.
-		computeAllPatchVotes(current_face, track, img_height, img_width,
-		                      minrow, mincol, maxrow, maxcol,
+		// combined_vote is a matrix the size of the sliding window radius.  
+		// each entry is the probability that that location is the next tracking location.
+		computeAllPatchVotes(hypothesis_track, track, img_height, img_width,
+		                      min_row, min_col, max_row, max_col,
 							  combined_vote,
 							  x_coords,
 							  y_coords,
 							  patch_scores);
 
 		
+		// find the "winning" track location for this scale.
+		// The "winning" location is characterized by the center of the track.
 		cv::Point min_loc, max_loc;
 		double minval, maxval;
-
-		
 		cv::minMaxLoc(*combined_vote, &minval, &maxval, &min_loc, &max_loc);
 
 		int cx = min_loc.x;
 		int cy = min_loc.y;
-		cout << "min loc was " << min_loc << endl;
 		result_y = track->getYCenter() + (min_loc.y - search_radius);
 		result_x = track->getXCenter() + (min_loc.x - search_radius);
-		//result_y = cy + minrow;
-		//result_x = cx + mincol;
 		score = minval;
 
 		scores[i] = score;
 		result_ys[i] = result_y;
 		result_xs[i] = result_x;
 
-		std::cout << "Score = " << score << std::endl;
-
 		combined_vote->release();
-		delete current_face;
+		delete hypothesis_track;
 	}
 
-	/*double winning_score = 100;
+	// pick the optimal scale, based on score.
+	double winning_score = scores[0];
 	int winner = 0;
-	for (int i = 0; i < scale_sizes; i++)
+	for (int i = 1; i < scale_sizes; i++)
 	{
 		if (scores[i] < winning_score)
 		{
@@ -963,10 +864,10 @@ void FragTrack::findTemplate(FaceTemplate *track,
 	}
 
 	result_y = result_ys[winner];
-	result_x = result_xs[winner];*/
-	result_height = track->getHeight();// + 2*size_to_grow_downwards[winner]; 
-	result_width = track->getWidth();// + 2*size_to_grow_right[winner];
-	//score = scores[winner];
+	result_x = result_xs[winner];
+	result_height = track->getHeight() + 2 * size_to_grow_downwards[winner]; 
+	result_width = track->getWidth() + 2 * size_to_grow_right[winner];
+	score = scores[winner];
 	return;
 }
 
@@ -974,7 +875,7 @@ void FragTrack::findTemplate(FaceTemplate *track,
 // updateTemplate - updates the template's position and makes sure it stays
 // inside the image
 //
-void FragTrack::updateTemplate(FaceTemplate *face, int new_height,int new_width,
+void FragTrack::updateTrack(FaceTemplate *face, int new_height,int new_width,
 								 int new_cy, int new_cx, double scale_factor,
 								 cv::Mat &I)
 {
@@ -982,7 +883,6 @@ void FragTrack::updateTemplate(FaceTemplate *face, int new_height,int new_width,
 	int t_halfw = (int)floor((double)new_width / 2.0 );
 	int t_halfh = (int)floor((double)new_height / 2.0 );
 	
-	cout << "getting roi" << endl;
 	if (new_cx - t_halfw < 0)
 	{
 		new_cx = t_halfw;
@@ -992,30 +892,20 @@ void FragTrack::updateTemplate(FaceTemplate *face, int new_height,int new_width,
 	{
 		new_cy = t_halfh;
 	}
-	cout << "new cx = " << new_cx << " and new halfw = " << t_halfw << endl;
 	cv::Mat tmp = getROI(I, new_cx - t_halfw, new_cy - t_halfh, new_width, new_height); 
 	cv::Mat tmp2 = tmp.clone(); // not sure if tmp will disappear once I goes out of scope, so copy it just in case...
-	cout << "updating face's template" << endl;
 	face->updateTemplate(tmp2, I, new_cx - t_halfw, new_cy - t_halfh);
-	cout << "updated" << endl;
 	if (1)//step % 4 == 0)
 	{
 		
 		// build track's patches.
-		face->patches.clear();
-		face->patch_histograms.clear();
-		buildTemplatePatchHistograms(face, face->patch_histograms);
+		buildTemplatePatchHistograms(face);
 	}
 
-
-	//
 	// make sure we stay inside the image
-	//
-	cout << "setters and such.." << endl;
 	if (face->getXTopLeft() < 0) {face->setX(0);}
 	if (face->getYTopLeft() < 0) {face->setY(0);}
 
-	
 	if (face->getYTopLeft() > I.rows - face->getHeight())
 	{
 		face->setY(I.rows - face->getHeight());
@@ -1026,53 +916,40 @@ void FragTrack::updateTemplate(FaceTemplate *face, int new_height,int new_width,
 		face->setX(I.cols - face->getWidth());
 	}
 
-	std::cout << "x,y location is " << face->getXTopLeft() << ", " << face->getYTopLeft() << std::endl;
-
 	step++;
 	return;
 }
 
-//
-// handleFrame - the outside interface after tracker is initialized. Call it with the
-// current frame and get the output in the window outwin, and in the log file
-//
+
+// trackFrame - the outside interface after tracker is initialized. Call it with the
+// current frame and get the resultant tracks.
 std::vector<Track> FragTrack::trackFrame(cv::Mat &frame)
 {	
 	std::vector<Track> retval;
 	img = frame;
-	// build this image's IH. From now on, we only work with
-	// this data structure and not with the image itself
-	computeIH(frame, IIV_I );
+
+	// build this image's integral histogram.  
+	// Use this instead of the actual image, 
+	// for efficiency.
+	buildIntegralHistogram(frame, IIV_I);
 	
-	int frame_height = frame.rows;
-	int frame_width = frame.cols;
-	
-	//
-	// find the current template in the current image
 	vector<int> x_coords;
 	vector<int> y_coords;
-
 	int new_yM, new_xM;
 	int new_height, new_width;
 	double score_M;
 
 	for (unsigned i = 0; i < tracks.size(); ++i)
 	{
-
-
-		cout << "finding track " << i << " of " << tracks.size() << endl;
-		cout << "This track has x,y coord " << tracks[i]->getXCenter() << ", " << tracks[i]->getYCenter() << endl;
-		findTemplate(tracks[i],
-					  frame_height, frame_width,
+		// find out where the track has moved to.
+		computeTrackDisplacement(tracks[i],
+					  frame.rows, frame.cols,
 					  new_yM, new_xM, 
 					  new_height, new_width,
 					  score_M,
 					  x_coords, y_coords);
 
-		cout << "New x,y is " << new_xM << ", " << new_yM << endl;
-		std::cout << "Post find template" << std::endl;
-
-		if (score_M == -1)
+		if (score_M == DELETE_TRACK)
 		{
 			for (vector<FaceTemplate *>::iterator it = tracks.begin(); it != tracks.end(); ++it)
 			{
@@ -1082,34 +959,23 @@ std::vector<Track> FragTrack::trackFrame(cv::Mat &frame)
 					break;
 				}
 			}
-			//tracks.
 			continue;
 		}
 		
-		cout << "pre update tepmlate" << endl;
-		cout << "new height, new width = " << new_height << ", " << new_width << endl;
-		cout << "new_yM, new_xM = " << new_yM << ", " << new_xM << endl;
-		cout << "beforehand... x = " << new_xM << " and width = " << new_width << endl;
-		updateTemplate(tracks[i], new_height, new_width, new_yM, new_xM, 1, frame);
-		cout << "post update template" << endl;
-		//drawRectangle(tracks[i], &output);
+		updateTrack(tracks[i], new_height, new_width, new_yM, new_xM, 1, frame);
 
+		// set as a Track so GUI layer understands.
 		Track t;
 		t.height = tracks[i]->getHeight();
 		t.width = tracks[i]->getWidth();
 		t.id = tracks[i]->getId();
 		t.x = tracks[i]->getXTopLeft();
 		t.y = tracks[i]->getYTopLeft();
+
 		retval.push_back(t);
 	}
 
-	//cv::imshow(outwin, output);
-	if (tracks.size() > 0)
-	{
-		//cv::waitKey();
-	}
 	return retval;
-
 }
 
 void FragTrack::init()

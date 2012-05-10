@@ -43,47 +43,46 @@ public:
 private:
 	static const int num_bins = 8;
 	static const int search_radius = 17;
+	static const int DELETE_TRACK = -1;
 
 	vector <cv::Mat*> IIV_I; // integral histogram of the image.
-	vector <cv::Mat*> IIV_I2; // integral histogram of the image.
 	vector <vector<double>*> template_patches_histograms;
 	vector <cv::Mat*> patch_vote_maps;
 	vector<FaceTemplate *> tracks; // tracked objects in the scene
 
 	void definePatches(FaceTemplate *f);
-	void buildTemplatePatchHistograms(FaceTemplate *face,
-		                                 vector<vector<double>*>& patch_histograms);
+	void buildTemplatePatchHistograms(FaceTemplate *face);
 
 	void getBinForEachPixel(cv::Mat &I, cv::Mat* bin_mat);
-	bool computeIH(cv::Mat &I, vector< cv::Mat* >& vec_II);
+	bool buildIntegralHistogram(cv::Mat &I, vector< cv::Mat* >& vec_II);
 	bool computeHistogram(int tl_y, int tl_x, int br_y, int br_x,
 		                   vector<cv::Mat*> &iiv, vector<double> &hist);
 
 	double compareHistograms(vector <double> &h1 , vector <double> &h2);
 	void computeSinglePatchVotes (Patch* p , FaceTemplate *f, vector <double>& hist,
-										   int minrow, int mincol,
-										   int maxrow, int maxcol,
+										   int min_row, int min_col,
+										   int max_row, int max_col,
 										   cv::Mat* votes, int& min_r, int& min_c,
 										   int& max_r, int& max_c, FaceTemplate *ref);
 
 	void computeAllPatchVotes(FaceTemplate *track,
 									FaceTemplate *reference,
 								    int img_height, int img_width,
-   								    int minrow, int mincol,
-								    int maxrow, int maxcol , cv::Mat* combined_vote,
+   								    int min_row, int min_col,
+								    int max_row, int max_col , cv::Mat* combined_vote,
 								    vector<int>& x_coords,
 								    vector<int>& y_coords,
 								    vector<double>& patch_scores) ;
 
-	void combineVoteMaps(vector< cv::Mat* >& vote_maps, cv::Mat* V, int mincol, 
-							int minrow, int maxcol, int maxrow, FaceTemplate *f);
+	void combineVoteMaps(vector< cv::Mat* >& vote_maps, cv::Mat* V, int min_col, 
+							int min_row, int max_col, int max_row, FaceTemplate *f);
 
-	void findTemplate(FaceTemplate * track, 
+	void computeTrackDisplacement(FaceTemplate * track, 
 					   int img_height, int img_width,
 					   int& result_y, int& result_x, int &result_height, int &result_width, double& score,
 					   vector<int>& x_coords, vector<int>& y_coords);
 
-	void updateTemplate(FaceTemplate *face, int new_height,int new_width,
+	void updateTrack(FaceTemplate *face, int new_height,int new_width,
 						   int new_cy, int new_cx, double scale_factor,
 						   cv::Mat &I);
 

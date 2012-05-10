@@ -7,6 +7,8 @@
 
 struct Track
 {
+	Track(int _x, int _y, int h, int w, int i) : x(_x), y(_y), height(h), width(w), id(i){};
+	Track(){};
 	int x; // (x, y) from top-left corner
 	int y;
 	int height;

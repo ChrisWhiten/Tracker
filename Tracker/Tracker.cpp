@@ -81,7 +81,7 @@ void Tracker::nextFrame()
 	cv::Mat3b output_frame(frame.rows, frame.cols);
 	frame.copyTo(output_frame);
 
-	trackFrame(frame, output_frame);
+	trackFrame(gray, output_frame);
 	
 	// arrange raw and tracked frames to be viewable in our window.
 	if (Constants::RESIZE_OUTPUT)
