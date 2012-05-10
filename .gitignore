@@ -5,4 +5,6 @@ Tracker.ilk
 Tracker.exe
 Tracker/Debug/*
 Tracker/Debug/**/*
+Tracker/Release/*
+Tracker/Release/**/*
 Tracker.suo
