@@ -30,6 +30,7 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="Qt_OpenCV_Win32Release.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -78,7 +79,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Detector.cpp" />
     <ClCompile Include="DummyTracker.cpp" />
+    <ClCompile Include="FaceTemplate.cpp" />
+    <ClCompile Include="FragTrack.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_Tracker.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -122,7 +126,10 @@
   <ItemGroup>
     <ClInclude Include="BaseTracker.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="Detector.h" />
     <ClInclude Include="DummyTracker.h" />
+    <ClInclude Include="FaceTemplate.h" />
+    <ClInclude Include="FragTrack.h" />
     <ClInclude Include="GeneratedFiles\ui_Tracker.h" />
     <ClInclude Include="OpenCVToQtInterfacing.h" />
   </ItemGroup>

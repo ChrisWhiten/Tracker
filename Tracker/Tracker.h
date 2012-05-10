@@ -21,7 +21,9 @@
 #include "ui_Tracker.h"
 #include "Constants.h"
 #include "DummyTracker.h"
+#include "FragTrack.h"
 #include "OpenCVToQtInterfacing.h"
+#include "Detector.h"
 
 class Tracker : public QMainWindow
 {
@@ -37,11 +39,14 @@ private slots:
 	void beginTracking();
 
 private:
+	static int frame_number;
 	Ui::TrackerClass ui;
 	QDir directory;
 	QTimer *timer;
+
 	QStringList files;
 	std::vector<BaseTracker *> trackers;
+	Detector *detector;
 	cv::VideoCapture *capture;
 
 	// false if reading from an actual video file.
@@ -50,8 +55,7 @@ private:
 	void trackFrame(cv::Mat &input, cv::Mat &output);
 	cv::Mat3b getFrame();
 	void endTracking();
-	
-
+	void detectAndSeedTrackers(cv::Mat &frame);
 };
 
 #endif // TRACKER_H

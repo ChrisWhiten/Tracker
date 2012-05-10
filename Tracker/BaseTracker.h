@@ -29,6 +29,7 @@ public:
 
 	virtual void init() = 0;
 	virtual std::vector<Track> trackFrame(cv::Mat &frame) = 0;
+	virtual void addTracks(cv::Mat &I, const std::vector<Track> &t) = 0;
 
 	std::string tracker_name;
 	cv::Scalar colour;

@@ -33,6 +33,15 @@
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="Trackers">
+      <UniqueIdentifier>{2b0ed68e-9a5c-4654-ac4f-9872953524d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Trackers\FragTrack">
+      <UniqueIdentifier>{fc3cae17-3660-4808-b07e-fc9722e057ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Trackers\DummyTracker">
+      <UniqueIdentifier>{aa47dbdb-d418-4494-a44b-e3c6b9db0bfb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -44,14 +53,23 @@
     <ClCompile Include="GeneratedFiles\qrc_Tracker.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="DummyTracker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_Tracker.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_Tracker.cpp">
       <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="DummyTracker.cpp">
+      <Filter>Trackers\DummyTracker</Filter>
+    </ClCompile>
+    <ClCompile Include="FragTrack.cpp">
+      <Filter>Trackers\FragTrack</Filter>
+    </ClCompile>
+    <ClCompile Include="FaceTemplate.cpp">
+      <Filter>Trackers\FragTrack</Filter>
+    </ClCompile>
+    <ClCompile Include="Detector.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -72,13 +90,22 @@
     <ClInclude Include="Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BaseTracker.h">
+    <ClInclude Include="OpenCVToQtInterfacing.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseTracker.h">
+      <Filter>Trackers</Filter>
     </ClInclude>
     <ClInclude Include="DummyTracker.h">
-      <Filter>Header Files</Filter>
+      <Filter>Trackers\DummyTracker</Filter>
     </ClInclude>
-    <ClInclude Include="OpenCVToQtInterfacing.h">
+    <ClInclude Include="FragTrack.h">
+      <Filter>Trackers\FragTrack</Filter>
+    </ClInclude>
+    <ClInclude Include="FaceTemplate.h">
+      <Filter>Trackers\FragTrack</Filter>
+    </ClInclude>
+    <ClInclude Include="Detector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

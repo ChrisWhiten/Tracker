@@ -26,3 +26,7 @@ std::vector<Track> DummyTracker::trackFrame(cv::Mat &frame)
 	ret.push_back(t);
 	return ret;
 }
+
+void DummyTracker::addTracks(cv::Mat &I, const std::vector<Track> &t)
+{
+}

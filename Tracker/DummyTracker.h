@@ -10,6 +10,7 @@ public:
 	~DummyTracker();
 	void init();
 	std::vector<Track> trackFrame(cv::Mat &frame);
+	void addTracks(cv::Mat &I, const std::vector<Track> &t);
 };
 
 #endif

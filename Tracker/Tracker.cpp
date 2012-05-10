@@ -10,17 +10,35 @@ Tracker::Tracker(QWidget *parent, Qt::WFlags flags)
 	connect(ui.actionBeginTracking, SIGNAL(triggered()), this, SLOT(beginTracking()));
 
 
-	// initialize trackers
+	// initialize trackers and detector
+	detector = new Detector();
 	trackers.push_back(new DummyTracker());
+	trackers.push_back(new FragTrack());
 	
+
 	// Update the UI
 	timer = new QTimer(this);
 	timer->setInterval(1000/Constants::FPS);
 	connect(timer, SIGNAL(timeout()), this, SLOT(nextFrame()));
+
+	Tracker::frame_number = 0;
 }
 
 Tracker::~Tracker()
-{}
+{
+	delete detector;
+}
+
+void Tracker::detectAndSeedTrackers(cv::Mat &frame)
+{
+	detector->detect(frame);
+	std::vector<Track> tracks = detector->getTracks();
+
+	for (unsigned i = 0; i < trackers.size(); ++i)
+	{
+		trackers[i]->addTracks(frame, tracks);
+	}
+}
 
 // Track the frame through each target tracker,
 // and display the results with a coloured rectangle.
@@ -31,8 +49,8 @@ void Tracker::trackFrame(cv::Mat &input, cv::Mat &output)
 		std::vector<Track> tracks = trackers[i]->trackFrame(input);
 		for (unsigned j = 0; j < tracks.size(); ++j)
 		{
-			cv::Point tl(tracks[i].x, tracks[i].y);
-			cv::Point br(tracks[i].x + tracks[i].width, tracks[i].y + tracks[i].height);
+			cv::Point tl(tracks[j].x, tracks[j].y);
+			cv::Point br(tracks[j].x + tracks[j].width, tracks[j].y + tracks[j].height);
 			cv::rectangle(output, tl, br, trackers[i]->colour, 2);
 		}
 	}
@@ -50,6 +68,14 @@ void Tracker::nextFrame()
 	if (!frame.data)
 	{
 		return;
+	}
+
+	cv::Mat gray(frame);
+	cv::cvtColor(frame, gray, CV_BGR2GRAY);
+
+	if (Tracker::frame_number % 20 == 0)
+	{
+		detectAndSeedTrackers(gray);
 	}
 
 	cv::Mat3b output_frame(frame.rows, frame.cols);
@@ -85,6 +111,7 @@ void Tracker::nextFrame()
 	ui.output_label->setGeometry(output_label_x, output_frame.rows + 10, ui.output_label->width(), ui.output_label->height());
 
 	repaint();
+	Tracker::frame_number++;
 }
 
 // Slot associated with the user wanting to select files to load.
@@ -140,3 +167,5 @@ cv::Mat3b Tracker::getFrame()
 	}
 	return frame;
 }
+
+int Tracker::frame_number = 0;
