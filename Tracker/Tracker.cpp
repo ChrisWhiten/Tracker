@@ -73,6 +73,7 @@ void Tracker::nextFrame()
 	cv::Mat gray(frame);
 	cv::cvtColor(frame, gray, CV_BGR2GRAY);
 
+
 	if (Tracker::frame_number % 20 == 0)
 	{
 		detectAndSeedTrackers(gray);

@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Input Sequence</string>
+     <string> </string>
     </property>
    </widget>
    <widget class="QLabel" name="output_sequence">
@@ -37,7 +37,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Output Sequence</string>
+     <string> </string>
     </property>
    </widget>
    <widget class="QLabel" name="input_label">

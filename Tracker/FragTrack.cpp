@@ -34,30 +34,33 @@ void FragTrack::addTracks(cv::Mat &I, const std::vector<Track> &t)
 {
 	img = I;
 	// allocate space for the IIV_I and the combined votes maps
-	cv::Mat* curr_ii;
+	cv::Mat *current_ii;
 	
 
 	int i;
 	for (i=0; i < num_bins; i++) 
 	{
-		curr_ii = new cv::Mat(I.rows,I.cols,CV_32S);
-		IIV_I.push_back(curr_ii);
+		current_ii = new cv::Mat(I.rows,I.cols,CV_32S);
+		IIV_I.push_back(current_ii);
 	}
 
 
 	buildIntegralHistogram(I, IIV_I);
 
-	for (unsigned i = 0; i < t.size(); ++i)
+	// consider moving checking if this is a new face
+	// to the detection class, or at least at the generic
+	// tracker level..
+	for (auto new_track = t.begin(); new_track != t.end(); ++new_track)
 	{
 		bool is_new = true;
 		for (unsigned j = 0; j < tracks.size(); ++j)
 		{
 			// manhattan distance
 			int dist = 0;
-			dist += abs(tracks[j]->getXTopLeft() - t[i].x);
-			dist += abs(tracks[j]->getYTopLeft() - t[i].y);
+			dist += abs(tracks[j]->getXTopLeft() - new_track->x);
+			dist += abs(tracks[j]->getYTopLeft() - new_track->y);
 
-			if (dist < 80)
+			if (dist < NEW_FACE_DISTANCE)
 			{
 				is_new = false;
 				break;
@@ -67,24 +70,12 @@ void FragTrack::addTracks(cv::Mat &I, const std::vector<Track> &t)
 		// if it's new, add it to the tracks.
 		if (is_new)
 		{
-			cout << "if it's new i want to see. " << endl;
-			for (unsigned j = 0; j < tracks.size(); ++j)
-			{
-				// manhattan distance
-				int dist = 0;
-				dist += abs(tracks[j]->getXTopLeft() - t[i].x);
-				dist += abs(tracks[j]->getYTopLeft() - t[i].y);
-				cout << "distance is " << 40 << endl;
-			}
+			cv::Mat tmp_mat = getROI(I, new_track->x, new_track->y, new_track->width, new_track->height);
 
-			cv::waitKey();
-
-
-			cv::Mat tmp_mat = getROI(I, t[i].x, t[i].y, t[i].width, t[i].height);
-
-			cv::Mat *curr_template = new cv::Mat(tmp_mat.clone());
+			cv::Mat *current_template = new cv::Mat(tmp_mat.clone());
 			tmp_mat.release();
-			FaceTemplate *ft = new FaceTemplate(*curr_template, I, t[i].x, t[i].y);
+			FaceTemplate *ft = new FaceTemplate(*current_template, I, new_track->x, new_track->y);
+
 
 			// template center
 			int t_halfw = (int)floor((double)ft->getWidth() / 2.0 );
@@ -558,25 +549,22 @@ void FragTrack::computeSinglePatchVotes (Patch *p , FaceTemplate *f, vector <dou
 // Then combines all the votes maps (robustly) to a single vote map
 void FragTrack::computeAllPatchVotes(FaceTemplate *current_face,
 										 FaceTemplate *reference,
-										 int img_height, int img_width,
    										 int min_row, int min_col,
 										 int max_row, int max_col , cv::Mat* combined_vote,
 										 vector<int>& x_coords,
 										 vector<int>& y_coords,
 										 vector<double>& patch_scores) 
 {
-	cv::Mat* current_votemap;
-	vector <double> *reference_patch_histogram;
+	cv::Mat *current_votemap;
+	vector<double> *reference_patch_histogram;
 
 	patch_vote_maps.clear();
 	x_coords.clear();
 	y_coords.clear();
 	patch_scores.clear();
 
-	vector<int> vote_regions_min_row; 
-	vector<int> vote_regions_min_col;
-	vector<int> vote_regions_max_row;
-	vector<int> vote_regions_max_col;
+	vector<int> vote_regions_min_row, vote_regions_min_col, vote_regions_max_row, vote_regions_max_col; 
+
 
 	int minx, miny, maxx, maxy;
 
@@ -669,6 +657,7 @@ void FragTrack::computeAllPatchVotes(FaceTemplate *current_face,
 		x_coords.push_back(min_col+min_loc.x); // these are the x,y coords of the hypothesis.
 		y_coords.push_back(min_row+min_loc.y);
 		patch_scores.push_back(minval); // minval is the score of that hypothesis
+		i++;
 	}  // next patch
 
 	//
@@ -690,7 +679,7 @@ void FragTrack::computeAllPatchVotes(FaceTemplate *current_face,
 		(*vm_it)->release();
 	}
 	patch_vote_maps.clear();
-	i++;
+	//i++;
 	return;
 }
 
@@ -755,7 +744,6 @@ void FragTrack::combineVoteMaps(vector< cv::Mat* > &vote_maps, cv::Mat *V, int m
 // by min_row,min_col and max_row,max_col.
 // Returns the result in result_y,result_x and with it its associated score
 void FragTrack::computeTrackDisplacement(FaceTemplate *track,
-							 int img_height, int img_width,
 							 int &result_y, int &result_x, 
 							 int &result_height, int &result_width,
 							 double &score,
@@ -805,8 +793,8 @@ void FragTrack::computeTrackDisplacement(FaceTemplate *track,
 
 		if (min_row - hypothesis_track->getHeight()/2 < 0) {min_row = hypothesis_track->getHeight()/2;}
 		if (min_col - hypothesis_track->getWidth()/2 < 0) {min_col = hypothesis_track->getWidth()/2;}
-		if (max_row >= img_height) {max_row = img_height - 1;}
-		if (max_col >= img_width) {max_col = img_width - 1;}
+		if (max_row >= img.rows) {max_row = img.rows - 1;}
+		if (max_col >= img.cols) {max_col = img.cols - 1;}
 
 		// out of bounds. remove.
 		if (max_row - min_row + 1 <= 0 || max_col - min_col + 1 <= 0)
@@ -823,7 +811,7 @@ void FragTrack::computeTrackDisplacement(FaceTemplate *track,
 
 		// combined_vote is a matrix the size of the sliding window radius.  
 		// each entry is the probability that that location is the next tracking location.
-		computeAllPatchVotes(hypothesis_track, track, img_height, img_width,
+		computeAllPatchVotes(hypothesis_track, track,
 		                      min_row, min_col, max_row, max_col,
 							  combined_vote,
 							  x_coords,
@@ -875,7 +863,7 @@ void FragTrack::computeTrackDisplacement(FaceTemplate *track,
 // updateTemplate - updates the template's position and makes sure it stays
 // inside the image
 //
-void FragTrack::updateTrack(FaceTemplate *face, int new_height,int new_width,
+void FragTrack::updateTrack(FaceTemplate *face, int new_height, int new_width,
 								 int new_cy, int new_cx, double scale_factor,
 								 cv::Mat &I)
 {
@@ -893,17 +881,10 @@ void FragTrack::updateTrack(FaceTemplate *face, int new_height,int new_width,
 		new_cy = t_halfh;
 	}
 	cv::Mat tmp = getROI(I, new_cx - t_halfw, new_cy - t_halfh, new_width, new_height); 
-	cv::Mat tmp2 = tmp.clone(); // not sure if tmp will disappear once I goes out of scope, so copy it just in case...
+	cv::Mat tmp2 = tmp.clone(); 
 	face->updateTemplate(tmp2, I, new_cx - t_halfw, new_cy - t_halfh);
-	if (1)//step % 4 == 0)
-	{
-		
-		// build track's patches.
-		buildTemplatePatchHistograms(face);
-	}
 
 	// make sure we stay inside the image
-	if (face->getXTopLeft() < 0) {face->setX(0);}
 	if (face->getYTopLeft() < 0) {face->setY(0);}
 
 	if (face->getYTopLeft() > I.rows - face->getHeight())
@@ -914,6 +895,12 @@ void FragTrack::updateTrack(FaceTemplate *face, int new_height,int new_width,
 	if (face->getXTopLeft() > I.cols - face->getWidth())
 	{
 		face->setX(I.cols - face->getWidth());
+	}
+
+	if (1)//step % 4 == 0)
+	{
+		// build track's patches.
+		buildTemplatePatchHistograms(face);
 	}
 
 	step++;
@@ -939,11 +926,10 @@ std::vector<Track> FragTrack::trackFrame(cv::Mat &frame)
 	int new_height, new_width;
 	double score_M;
 
-	for (unsigned i = 0; i < tracks.size(); ++i)
+	for (auto face_track = tracks.begin(); face_track != tracks.end(); ++face_track)
 	{
 		// find out where the track has moved to.
-		computeTrackDisplacement(tracks[i],
-					  frame.rows, frame.cols,
+		computeTrackDisplacement(*face_track,
 					  new_yM, new_xM, 
 					  new_height, new_width,
 					  score_M,
@@ -953,7 +939,7 @@ std::vector<Track> FragTrack::trackFrame(cv::Mat &frame)
 		{
 			for (vector<FaceTemplate *>::iterator it = tracks.begin(); it != tracks.end(); ++it)
 			{
-				if ((*it)->getId() == tracks[i]->getId())
+				if ((*it)->getId() == (*face_track)->getId())
 				{
 					tracks.erase(it);
 					break;
@@ -962,15 +948,16 @@ std::vector<Track> FragTrack::trackFrame(cv::Mat &frame)
 			continue;
 		}
 		
-		updateTrack(tracks[i], new_height, new_width, new_yM, new_xM, 1, frame);
+		// here it is expecting centre x and y...
+		updateTrack(*face_track, new_height, new_width, new_yM, new_xM, 1, frame);
 
 		// set as a Track so GUI layer understands.
 		Track t;
-		t.height = tracks[i]->getHeight();
-		t.width = tracks[i]->getWidth();
-		t.id = tracks[i]->getId();
-		t.x = tracks[i]->getXTopLeft();
-		t.y = tracks[i]->getYTopLeft();
+		t.height = (*face_track)->getHeight();
+		t.width = (*face_track)->getWidth();
+		t.id = (*face_track)->getId();
+		t.x = (*face_track)->getXTopLeft();
+		t.y = (*face_track)->getYTopLeft();
 
 		retval.push_back(t);
 	}

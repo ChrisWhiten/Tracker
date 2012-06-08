@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'Tracker.ui'
 **
-** Created: Thu May 10 14:06:13 2012
+** Created: Wed Jun 6 09:54:01 2012
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -86,8 +86,8 @@ public:
         TrackerClass->setWindowTitle(QApplication::translate("TrackerClass", "Tracker", 0, QApplication::UnicodeUTF8));
         actionLoad->setText(QApplication::translate("TrackerClass", "Load", 0, QApplication::UnicodeUTF8));
         actionBeginTracking->setText(QApplication::translate("TrackerClass", "Begin Tracking", 0, QApplication::UnicodeUTF8));
-        input_sequence->setText(QApplication::translate("TrackerClass", "Input Sequence", 0, QApplication::UnicodeUTF8));
-        output_sequence->setText(QApplication::translate("TrackerClass", "Output Sequence", 0, QApplication::UnicodeUTF8));
+        input_sequence->setText(QString());
+        output_sequence->setText(QString());
         input_label->setText(QApplication::translate("TrackerClass", "Raw Frame", 0, QApplication::UnicodeUTF8));
         output_label->setText(QApplication::translate("TrackerClass", "Tracked Frame", 0, QApplication::UnicodeUTF8));
         menuFile->setTitle(QApplication::translate("TrackerClass", "File", 0, QApplication::UnicodeUTF8));

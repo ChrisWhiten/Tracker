@@ -44,6 +44,7 @@ private:
 	static const int num_bins = 8;
 	static const int search_radius = 17;
 	static const int DELETE_TRACK = -1;
+	static const int NEW_FACE_DISTANCE = 100;
 
 	vector <cv::Mat*> IIV_I; // integral histogram of the image.
 	vector <vector<double>*> template_patches_histograms;
@@ -67,7 +68,6 @@ private:
 
 	void computeAllPatchVotes(FaceTemplate *track,
 									FaceTemplate *reference,
-								    int img_height, int img_width,
    								    int min_row, int min_col,
 								    int max_row, int max_col , cv::Mat* combined_vote,
 								    vector<int>& x_coords,
@@ -78,8 +78,8 @@ private:
 							int min_row, int max_col, int max_row, FaceTemplate *f);
 
 	void computeTrackDisplacement(FaceTemplate * track, 
-					   int img_height, int img_width,
-					   int& result_y, int& result_x, int &result_height, int &result_width, double& score,
+					   int& result_y, int& result_x, 
+					   int &result_height, int &result_width, double& score,
 					   vector<int>& x_coords, vector<int>& y_coords);
 
 	void updateTrack(FaceTemplate *face, int new_height,int new_width,

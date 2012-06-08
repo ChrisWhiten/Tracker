@@ -14,7 +14,7 @@ class Detector
 {
 public:
 	Detector();
-	void detect(Mat &img);
+	void detect(Mat img);
 	const std::vector<Track> &getTracks() const;
 	std::vector<Track>::iterator firstTrack();
 	std::vector<Track>::iterator lastTrack();

@@ -13,10 +13,10 @@ Detector::Detector()
 	}
 }
 
-void Detector::detect(Mat &img)
+void Detector::detect(Mat img)
 {
 	faces.clear();
-	Mat temp(img);
+	Mat temp = img.clone();
 	//cv::cvtColor(img, temp, CV_BGR2GRAY);
 	equalizeHist(temp, temp);
 	classifier.detectMultiScale(temp, faces, 1.05, 10);//, 0|CV_HAAR_SCALE_IMAGE, Size(30, 30));

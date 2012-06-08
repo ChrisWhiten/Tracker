@@ -14,11 +14,11 @@ namespace OpenCVToQtInterfacing
 	inline QImage Mat2QImage(const cv::Mat3b &src) 
 	{
 		QImage dest(src.cols, src.rows, QImage::Format_ARGB32);
-		for (unsigned row = 0; row < src.rows; ++row) 
+		for (int row = 0; row < src.rows; ++row) 
 		{
 			const cv::Vec3b *srcrow = src[row];
 			QRgb *destrow = (QRgb*)dest.scanLine(row);
-			for (unsigned col = 0; col< src.cols; ++col) 
+			for (int col = 0; col < src.cols; ++col) 
 			{
 				destrow[col] = qRgba(srcrow[col][2], srcrow[col][1], srcrow[col][0], 255);
 			}
