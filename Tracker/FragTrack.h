@@ -46,7 +46,7 @@ private:
 	static const int DELETE_TRACK = -1;
 	static const int NEW_FACE_DISTANCE = 100;
 
-	vector <cv::Mat*> IIV_I; // integral histogram of the image.
+	vector <cv::Mat*> integral_histogram; // integral histogram of the image.
 	vector <vector<double>*> template_patches_histograms;
 	vector <cv::Mat*> patch_vote_maps;
 	vector<FaceTemplate *> tracks; // tracked objects in the scene
@@ -55,9 +55,9 @@ private:
 	void buildTemplatePatchHistograms(FaceTemplate *face);
 
 	void getBinForEachPixel(cv::Mat &I, cv::Mat* bin_mat);
-	bool buildIntegralHistogram(cv::Mat &I, vector< cv::Mat* >& vec_II);
+	bool buildIntegralHistogram(cv::Mat &I);
 	bool computeHistogram(int tl_y, int tl_x, int br_y, int br_x,
-		                   vector<cv::Mat*> &iiv, vector<double> &hist);
+		                   vector<double> &hist);
 
 	double compareHistograms(vector <double> &h1 , vector <double> &h2);
 	void computeSinglePatchVotes (Patch* p , FaceTemplate *f, vector <double>& hist,

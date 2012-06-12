@@ -1,26 +1,28 @@
-﻿Build started 08/06/2012 11:47:58 AM.
+﻿Build started 12/06/2012 12:11:29 PM.
      1>Project "C:\Projects\Tracker\Tracker\Tracker.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "C:\Projects\Tracker\\..\Builds\Tracker\Tracker\Release\Tracker.unsuccessfulbuild" because "AlwaysCreate" was specified.
        CustomBuild:
          All outputs are up-to-date.
        ClCompile:
-         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I.\GeneratedFiles /IC:\Projects\Libraries\Qt\include /I.\GeneratedFiles\Release /IC:\Projects\Libraries\Qt\include\QtCore /IC:\Projects\Libraries\Qt\include\QtGui /I.\ /IC:\Projects\Tracker\\.. /I"C:\Projects\Tracker\\..\Libraries\vxl-1.14.0\bin\vcl" /I"C:\Projects\Tracker\\..\Libraries\vxl-1.14.0\vcl" /I"C:\Projects\Tracker\\..\Libraries\vxl-1.14.0\bin\core" /I"C:\Projects\Tracker\\..\Libraries\vxl-1.14.0\core" /IC:\Projects\Tracker\\..\Libraries\OpenCV2.3.1\build\include /I"C:\Projects\Tracker\\..\Libraries\lemon-1.2.3" /I"C:\Projects\Tracker\\..\Libraries\lemon-1.2.3\vs2010" /nologo /W3 /WX- /O2 /Oy- /D UNICODE /D WIN32 /D QT_LARGEFILE_SUPPORT /D QT_NO_DEBUG /D NDEBUG /D QT_CORE_LIB /D QT_GUI_LIB /D WIN32 /D _CONSOLE /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t- /Zc:forScope /Fo"C:\Projects\Tracker\\..\Builds\Tracker\Tracker\Release\\" /Fd"C:\Projects\Tracker\\..\Builds\Tracker\Tracker\Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt FragTrack.cpp GeneratedFiles\Release\moc_Tracker.cpp Tracker.cpp main.cpp /D _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I.\GeneratedFiles /IC:\Projects\Libraries\Qt\include /I.\GeneratedFiles\Release /IC:\Projects\Libraries\Qt\include\QtCore /IC:\Projects\Libraries\Qt\include\QtGui /I.\ /IC:\Projects\Tracker\\.. /I"C:\Projects\Tracker\\..\Libraries\vxl-1.14.0\bin\vcl" /I"C:\Projects\Tracker\\..\Libraries\vxl-1.14.0\vcl" /I"C:\Projects\Tracker\\..\Libraries\vxl-1.14.0\bin\core" /I"C:\Projects\Tracker\\..\Libraries\vxl-1.14.0\core" /IC:\Projects\Tracker\\..\Libraries\OpenCV2.3.1\build\include /I"C:\Projects\Tracker\\..\Libraries\lemon-1.2.3" /I"C:\Projects\Tracker\\..\Libraries\lemon-1.2.3\vs2010" /nologo /W3 /WX- /O2 /Oy- /D UNICODE /D WIN32 /D QT_LARGEFILE_SUPPORT /D QT_NO_DEBUG /D NDEBUG /D QT_CORE_LIB /D QT_GUI_LIB /D WIN32 /D _CONSOLE /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t- /Zc:forScope /Fo"C:\Projects\Tracker\\..\Builds\Tracker\Tracker\Release\\" /Fd"C:\Projects\Tracker\\..\Builds\Tracker\Tracker\Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt FragTrack.cpp /D _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 
          /D _CRT_SECURE_NO_DEPRECATE
          /DCOMPILE_DBG_STATEMENTS 
          FragTrack.cpp
-     1>FragTrack.cpp(156): warning C4018: '<' : signed/unsigned mismatch
-     1>FragTrack.cpp(246): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
-     1>FragTrack.cpp(276): warning C4244: '=' : conversion from 'float' to 'int', possible loss of data
-     1>FragTrack.cpp(309): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>FragTrack.cpp(528): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>FragTrack.cpp(640): warning C4244: 'initializing' : conversion from 'double' to 'int', possible loss of data
-     1>FragTrack.cpp(641): warning C4244: 'initializing' : conversion from 'double' to 'int', possible loss of data
-     1>FragTrack.cpp(734): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-         moc_Tracker.cpp
-         Tracker.cpp
-         main.cpp
-         Generating Code...
+     1>FragTrack.cpp(467): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>FragTrack.cpp(677): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>FragTrack.cpp(709): warning C4244: 'initializing' : conversion from 'const double' to 'int', possible loss of data
+     1>FragTrack.cpp(709): warning C4244: 'initializing' : conversion from 'const double' to 'int', possible loss of data
+     1>FragTrack.cpp(710): warning C4244: 'initializing' : conversion from 'const double' to 'int', possible loss of data
+     1>FragTrack.cpp(710): warning C4244: 'initializing' : conversion from 'const double' to 'int', possible loss of data
+     1>FragTrack.cpp(711): warning C4244: 'initializing' : conversion from 'const double' to 'int', possible loss of data
+     1>FragTrack.cpp(711): warning C4244: 'initializing' : conversion from 'const double' to 'int', possible loss of data
+     1>FragTrack.cpp(711): warning C4244: 'initializing' : conversion from 'const double' to 'int', possible loss of data
+     1>FragTrack.cpp(711): warning C4244: 'initializing' : conversion from 'const double' to 'int', possible loss of data
+     1>FragTrack.cpp(712): warning C4244: 'initializing' : conversion from 'const double' to 'int', possible loss of data
+     1>FragTrack.cpp(712): warning C4244: 'initializing' : conversion from 'const double' to 'int', possible loss of data
+     1>FragTrack.cpp(712): warning C4244: 'initializing' : conversion from 'const double' to 'int', possible loss of data
+     1>FragTrack.cpp(712): warning C4244: 'initializing' : conversion from 'const double' to 'int', possible loss of data
          All outputs are up-to-date.
        Link:
          c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Projects\Tracker\\Tracker.exe" /NOLOGO /LIBPATH:C:\Projects\Libraries\Qt\lib /LIBPATH:C:\Projects\Tracker\ /LIBPATH:C:\Projects\Tracker\\..\Libraries\OpenCV2.3.1\build\x86\vc10\lib /LIBPATH:C:\Projects\Tracker\\..\Libraries\OpenCV2.3.1\3rdparty\lib\Release /LIBPATH:C:\Projects\Tracker\\..\Libraries\OpenCV2.3.1\build\common\tbb\ia32\vc10 /LIBPATH:"C:\Projects\Tracker\\..\Libraries\fltk-1.1.10\lib" /LIBPATH:"C:\Projects\Tracker\\..\Libraries\vxl-1.14.0\bin\lib\Release" /LIBPATH:C:\Projects\Tracker\\..\Libraries\MySQLCCon\lib\opt /LIBPATH:"C:\Projects\Tracker\\..\Libraries\lemon-1.2.3\vs2010\lemon\Release" /LIBPATH:C:\Projects\Tracker\\..\Libraries\boost_1_48_0\libs /LIBPATH:"C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Lib" qtmain.lib QtCore4.lib QtGui4.lib opencv_core231.lib opencv_highgui231.lib opencv_calib3d231.lib opencv_contrib231.lib opencv_features2d231.lib opencv_flann231.lib opencv_gpu231.lib opencv_haartraining_engine.lib opencv_imgproc231.lib opencv_legacy231.lib opencv_ml231.lib opencv_objdetect231.lib opencv_ts231.lib opencv_video231.lib libmysql.lib mysqlclient.lib mysys.lib lemon.lib Vfw32.lib fltkgl.lib fltk.lib opencv_core231.lib opencv_flann231.lib opencv_imgproc231.lib opencv_highgui231.lib opencv_ml231.lib opencv_video231.lib opencv_objdetect231.lib opencv_features2d231.lib opencv_calib3d231.lib opencv_legacy231.lib opencv_contrib231.lib vsl.lib vgl.lib vbl_io.lib v3p_netlib.lib vnl_algo.lib vnl_io.lib vil_algo.lib vul_io.lib mpeg2.lib vo.lib vbl.lib vul.lib vnl.lib geotiff.lib vil.lib vcl.lib jpeg.lib tiff.lib png.lib z.lib opengl32.lib glu32.lib wsock32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"C:\Projects\Tracker\\..\Builds\Tracker\Tracker\Release\Tracker.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /PDB:"C:\Projects\Tracker\Tracker.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Projects\Tracker\Tracker.lib" /MACHINE:X86 C:\Projects\Tracker\\..\Builds\Tracker\Tracker\Release\Detector.obj
@@ -41,4 +43,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:04.46
+Time Elapsed 00:00:06.33
