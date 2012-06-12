@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'Tracker.ui'
 **
-** Created: Tue Jun 12 14:05:01 2012
+** Created: Tue Jun 12 14:52:47 2012
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -19,6 +19,7 @@
 #include <QtGui/QMainWindow>
 #include <QtGui/QMenu>
 #include <QtGui/QMenuBar>
+#include <QtGui/QPushButton>
 #include <QtGui/QStatusBar>
 #include <QtGui/QWidget>
 
@@ -35,6 +36,8 @@ public:
     QLabel *input_label;
     QLabel *output_label;
     QLabel *frame_label;
+    QPushButton *play_pause_button;
+    QPushButton *stop_button;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QStatusBar *statusBar;
@@ -65,6 +68,12 @@ public:
         frame_label = new QLabel(centralWidget);
         frame_label->setObjectName(QString::fromUtf8("frame_label"));
         frame_label->setGeometry(QRect(520, 340, 71, 20));
+        play_pause_button = new QPushButton(centralWidget);
+        play_pause_button->setObjectName(QString::fromUtf8("play_pause_button"));
+        play_pause_button->setGeometry(QRect(10, 330, 75, 23));
+        stop_button = new QPushButton(centralWidget);
+        stop_button->setObjectName(QString::fromUtf8("stop_button"));
+        stop_button->setGeometry(QRect(100, 330, 75, 23));
         TrackerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(TrackerClass);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
@@ -78,7 +87,6 @@ public:
 
         menuBar->addAction(menuFile->menuAction());
         menuFile->addAction(actionLoad);
-        menuFile->addAction(actionBeginTracking);
 
         retranslateUi(TrackerClass);
 
@@ -95,6 +103,8 @@ public:
         input_label->setText(QApplication::translate("TrackerClass", "Raw Frame", 0, QApplication::UnicodeUTF8));
         output_label->setText(QApplication::translate("TrackerClass", "Tracked Frame", 0, QApplication::UnicodeUTF8));
         frame_label->setText(QString());
+        play_pause_button->setText(QApplication::translate("TrackerClass", "Play", 0, QApplication::UnicodeUTF8));
+        stop_button->setText(QApplication::translate("TrackerClass", "Restart", 0, QApplication::UnicodeUTF8));
         menuFile->setTitle(QApplication::translate("TrackerClass", "File", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 

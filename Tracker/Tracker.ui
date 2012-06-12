@@ -79,6 +79,32 @@
      <string/>
     </property>
    </widget>
+   <widget class="QPushButton" name="play_pause_button">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>330</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Play</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="stop_button">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>330</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Restart</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -94,7 +120,6 @@
      <string>File</string>
     </property>
     <addaction name="actionLoad"/>
-    <addaction name="actionBeginTracking"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>

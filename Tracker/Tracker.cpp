@@ -7,8 +7,8 @@ Tracker::Tracker(QWidget *parent, Qt::WFlags flags)
 	ui.setupUi(this);
 
 	connect(ui.actionLoad, SIGNAL(triggered()), this, SLOT(loadFiles()));
-	connect(ui.actionBeginTracking, SIGNAL(triggered()), this, SLOT(beginTracking()));
-
+	connect(ui.play_pause_button, SIGNAL(clicked()), this, SLOT(playOrPause()));
+	connect(ui.stop_button, SIGNAL(clicked()), this, SLOT(restart()));
 
 	// initialize trackers and detector
 	detector = new Detector();
@@ -21,12 +21,51 @@ Tracker::Tracker(QWidget *parent, Qt::WFlags flags)
 	timer->setInterval(1000/Constants::FPS);
 	connect(timer, SIGNAL(timeout()), this, SLOT(nextFrame()));
 
-	Tracker::frame_number = 0;
+	frame_number = 0;
+	state = STOPPED;
 }
 
 Tracker::~Tracker()
 {
 	delete detector;
+}
+
+void Tracker::playOrPause()
+{
+	if (state == STOPPED)
+	{
+		ui.play_pause_button->setText("Pause");
+		state = PLAYING;
+		beginTracking();
+	}
+	else if (state == PLAYING)
+	{
+		ui.play_pause_button->setText("Play");
+		state = PAUSED;
+		pauseTracking();
+	}
+	else
+	{
+		ui.play_pause_button->setText("Pause");
+		state = PLAYING;
+		beginTracking();
+	}
+}
+
+void Tracker::restart()
+{
+	trackers.clear();
+	trackers.push_back(new DummyTracker());
+	trackers.push_back(new FragTrack());
+
+	frame_number = 0;
+	state = PAUSED;
+	ui.play_pause_button->setText("Play");
+
+	if (!reading_sequence_of_images)
+	{
+		capture->set(CV_CAP_PROP_POS_FRAMES, 0);
+	}
 }
 
 void Tracker::detectAndSeedTrackers(cv::Mat &frame)
@@ -59,8 +98,6 @@ void Tracker::trackFrame(cv::Mat &input, cv::Mat &output)
 // 'slot' callback emitted from the timer timing out.
 // Takes next frame, feeds it into the tracker, and displays 
 // the results on our Qt window.
-//
-// Kind of messy, needs to be cleaned up in the future.
 void Tracker::nextFrame()
 {
 	// load frame.
@@ -73,8 +110,7 @@ void Tracker::nextFrame()
 	cv::Mat gray(frame);
 	cv::cvtColor(frame, gray, CV_BGR2GRAY);
 
-
-	if (Tracker::frame_number % 20 == 0)
+	if (frame_number % 20 == 0)
 	{
 		detectAndSeedTrackers(gray);
 	}
@@ -83,46 +119,49 @@ void Tracker::nextFrame()
 	frame.copyTo(output_frame);
 
 	trackFrame(gray, output_frame);
-	
+	updateGUI(frame, output_frame);
+	frame_number++;
+}
+
+void Tracker::updateGUI(cv::Mat3b &raw_frame, cv::Mat3b &tracked_frame)
+{
 	// arrange raw and tracked frames to be viewable in our window.
 	if (Constants::RESIZE_OUTPUT)
 	{
 		int frame_width = ui.centralWidget->width()/3;
 		int frame_height = ui.centralWidget->height()/2;
-		cv::resize(frame, frame, cv::Size(frame_width, frame_height), 0, 0);
-		cv::resize(output_frame, output_frame, cv::Size(frame_width, frame_height), 0, 0);
+		cv::resize(raw_frame, raw_frame, cv::Size(frame_width, frame_height), 0, 0);
+		cv::resize(tracked_frame, tracked_frame, cv::Size(frame_width, frame_height), 0, 0);
 	}
 
 	// arrange raw image.
-	ui.input_sequence->setGeometry(0, 0, frame.cols, frame.rows);
+	ui.input_sequence->setGeometry(0, 0, raw_frame.cols, raw_frame.rows);
 
-	QImage qimage_frame = OpenCVToQtInterfacing::Mat2QImage(frame);
+	QImage qimage_frame = OpenCVToQtInterfacing::Mat2QImage(raw_frame);
 	ui.input_sequence->setPixmap(QPixmap::fromImage(qimage_frame));
 
-	int input_label_x = (frame.cols/2) - (ui.input_label->width()/2);
-	ui.input_label->setGeometry(input_label_x, frame.rows + 10, ui.input_label->width(), ui.input_label->height());
+	int input_label_x = (raw_frame.cols/2) - (ui.input_label->width()/2);
+	ui.input_label->setGeometry(input_label_x, raw_frame.rows + 10, ui.input_label->width(), ui.input_label->height());
 
 	// arrange tracked image.
-	ui.output_sequence->setGeometry(output_frame.cols + 10, 0, output_frame.cols, output_frame.rows);
+	ui.output_sequence->setGeometry(tracked_frame.cols + 10, 0, tracked_frame.cols, tracked_frame.rows);
 
-	QImage qimage_output_frame = OpenCVToQtInterfacing::Mat2QImage(output_frame);
+	QImage qimage_output_frame = OpenCVToQtInterfacing::Mat2QImage(tracked_frame);
 	ui.output_sequence->setPixmap(QPixmap::fromImage(qimage_output_frame));
 
-	int output_label_x = ((3 * output_frame.cols)/2 + 10) - (ui.output_label->width()/2);
-	ui.output_label->setGeometry(output_label_x, output_frame.rows + 10, ui.output_label->width(), ui.output_label->height());
+	int output_label_x = ((3 * tracked_frame.cols)/2 + 10) - (ui.output_label->width()/2);
+	ui.output_label->setGeometry(output_label_x, tracked_frame.rows + 10, ui.output_label->width(), ui.output_label->height());
 
-	repaint();
-	Tracker::frame_number++;
-
+	// update frame number on GUI.
 	stringstream ss;
-	ss << "Frame " << Tracker::frame_number;
+	ss << "Frame " << frame_number;
 
 	QString frametext = QString::fromStdString(ss.str());
 	ss.str("");
 	ss.clear();
-
 	ui.frame_label->setText(frametext);
 
+	repaint();
 }
 
 // Slot associated with the user wanting to select files to load.
@@ -146,11 +185,17 @@ void Tracker::beginTracking()
 	timer->start();
 }
 
+void Tracker::pauseTracking()
+{
+	timer->stop();
+}
+
 void Tracker::endTracking()
 {
 	timer->stop();
-	if (capture)
+	if (!reading_sequence_of_images)
 	{
+		capture->release();
 		delete capture;
 	}
 
@@ -162,7 +207,6 @@ cv::Mat3b Tracker::getFrame()
 	cv::Mat3b frame;
 	if (reading_sequence_of_images)
 	{
-		static int frame_number = 0;
 		if (frame_number >= files.size())
 		{
 			return frame;
@@ -170,7 +214,6 @@ cv::Mat3b Tracker::getFrame()
 
 		QString filename = files[frame_number];
 		frame = cv::imread(filename.toStdString());
-		frame_number++;
 	}
 	else
 	{
@@ -179,4 +222,4 @@ cv::Mat3b Tracker::getFrame()
 	return frame;
 }
 
-int Tracker::frame_number = 0;
+//int Tracker::frame_number = 0;

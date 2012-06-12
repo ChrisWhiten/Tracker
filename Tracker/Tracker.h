@@ -36,13 +36,16 @@ public:
 private slots:
 	void nextFrame();
 	void loadFiles();
-	void beginTracking();
+	
+	void playOrPause();
+	void restart();
 
 private:
 	static int frame_number;
 	Ui::TrackerClass ui;
 	QDir directory;
 	QTimer *timer;
+	int state;
 
 	QStringList files;
 	std::vector<BaseTracker *> trackers;
@@ -54,8 +57,15 @@ private:
 	
 	void trackFrame(cv::Mat &input, cv::Mat &output);
 	cv::Mat3b getFrame();
+
+	void beginTracking();
+	void pauseTracking();
 	void endTracking();
+
 	void detectAndSeedTrackers(cv::Mat &frame);
+	void updateGUI(cv::Mat3b &raw_frame, cv::Mat3b &tracked_frame);
+
+	enum states {PAUSED, PLAYING, STOPPED};
 };
 
 #endif // TRACKER_H
