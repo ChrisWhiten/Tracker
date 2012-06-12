@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="text">
-     <string> </string>
+     <string/>
     </property>
    </widget>
    <widget class="QLabel" name="output_sequence">
@@ -37,7 +37,7 @@
      </rect>
     </property>
     <property name="text">
-     <string> </string>
+     <string/>
     </property>
    </widget>
    <widget class="QLabel" name="input_label">
@@ -64,6 +64,19 @@
     </property>
     <property name="text">
      <string>Tracked Frame</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="frame_label">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>340</y>
+      <width>71</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
   </widget>

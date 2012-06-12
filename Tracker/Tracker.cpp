@@ -113,6 +113,16 @@ void Tracker::nextFrame()
 
 	repaint();
 	Tracker::frame_number++;
+
+	stringstream ss;
+	ss << "Frame " << Tracker::frame_number;
+
+	QString frametext = QString::fromStdString(ss.str());
+	ss.str("");
+	ss.clear();
+
+	ui.frame_label->setText(frametext);
+
 }
 
 // Slot associated with the user wanting to select files to load.

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'Tracker.ui'
 **
-** Created: Fri Jun 8 12:22:29 2012
+** Created: Tue Jun 12 14:05:01 2012
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -34,6 +34,7 @@ public:
     QLabel *output_sequence;
     QLabel *input_label;
     QLabel *output_label;
+    QLabel *frame_label;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QStatusBar *statusBar;
@@ -61,6 +62,9 @@ public:
         output_label = new QLabel(centralWidget);
         output_label->setObjectName(QString::fromUtf8("output_label"));
         output_label->setGeometry(QRect(400, 260, 71, 16));
+        frame_label = new QLabel(centralWidget);
+        frame_label->setObjectName(QString::fromUtf8("frame_label"));
+        frame_label->setGeometry(QRect(520, 340, 71, 20));
         TrackerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(TrackerClass);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
@@ -90,6 +94,7 @@ public:
         output_sequence->setText(QString());
         input_label->setText(QApplication::translate("TrackerClass", "Raw Frame", 0, QApplication::UnicodeUTF8));
         output_label->setText(QApplication::translate("TrackerClass", "Tracked Frame", 0, QApplication::UnicodeUTF8));
+        frame_label->setText(QString());
         menuFile->setTitle(QApplication::translate("TrackerClass", "File", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
